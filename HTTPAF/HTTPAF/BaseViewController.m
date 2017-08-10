@@ -9,6 +9,7 @@
 #import "BaseViewController.h"
 #import "UIView+Toast.h"
 #import "MBProgressHUD.h"
+#import "Reachability.h"
 
 
 
@@ -28,13 +29,42 @@
     }
     return self;
 }
+-(void)dealloc
+{
+    [[NSNotificationCenter defaultCenter]removeObserver:self];
+}
 
 -(void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
     _isShowing = YES;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+     
+                                             selector:@selector(reachabilityChanged:)
+     
+                                                 name:kReachabilityChangedNotification
+     
+                                               object:nil];
+    Reachability *reach = [Reachability reachabilityWithHostName:@"www.apple.com"] ;
+    
+    [reach startNotifier];
 }
-
+-(void)reachabilityChanged:(NSNotification *)notification{
+    
+    Reachability *reach = [notification object];
+    
+    if([reach isKindOfClass:[Reachability class]]){
+        
+        NetworkStatus status = [reach currentReachabilityStatus];
+        
+        if (status==NotReachable) {
+            
+            [self showAlertMes:@"网络未连接"];
+        }
+        
+    }
+    
+}
 -(void)viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
@@ -111,6 +141,13 @@
  //是否支持右滑返回
     return self.navigationController.childViewControllers.count > 1;
 }
+-(void)showAlertMes:(NSString*)mes
+{
+    UIAlertView *view=[[UIAlertView alloc]initWithTitle:nil message:mes delegate:nil cancelButtonTitle:@"确定" otherButtonTitles: nil];
+    
+    [view show];
+}
+
 -(void)EditProduct
 {
     UIAlertView *view=[[UIAlertView alloc]initWithTitle:@"提醒" message:@"需要退出程序重新打开" delegate:self cancelButtonTitle:@"确定" otherButtonTitles: nil];
@@ -191,10 +228,6 @@
     
     [self.view.window makeToast:mes];
 }
-
-
-
-
 
 - (void)didReceiveMemoryWarning
 {

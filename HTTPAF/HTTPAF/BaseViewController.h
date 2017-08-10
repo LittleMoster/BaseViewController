@@ -36,4 +36,5 @@
  */
 -(void)EditProduct;
 
+-(void)showAlertMes:(NSString*)mes;
 @end
